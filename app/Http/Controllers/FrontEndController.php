@@ -42,6 +42,58 @@ class FrontEndController extends Controller
     }
 
     /**
+     * Update the Home page content.
+     *
+     * @param Request $request
+     * @param FrontEnd $frontEnd
+     * @return \Illuminate\Http\Response
+     */
+    public function updateHome(Request $request, FrontEnd $frontEnd)
+    {
+        $data = $this->homeValidation($request);
+
+        // Testimonials images (3)
+        $i = 0;
+        foreach ($request->images as $image) {
+            if (isset($request->image_files[$i])) {
+                $logoNewName = time().$request->image_files[$i]->getClientOriginalName();
+                $request->image_files[$i]->move('lara/front-ends/home', $logoNewName);
+                $data['images'][$i] = 'lara/front-ends/home/'.$logoNewName;
+            } else {
+                $data['images'][$i] = $image;
+            }
+            $i++;
+        }
+        unset($data['image_files']);
+
+        // Optional homepage images
+        $data['consultationImage'] = $request->input('consultationImage');
+        if ($request->hasFile('consultation_image_file')) {
+            $logoNewName = time().$request->file('consultation_image_file')->getClientOriginalName();
+            $request->file('consultation_image_file')->move('lara/front-ends/home', $logoNewName);
+            $data['consultationImage'] = 'lara/front-ends/home/'.$logoNewName;
+        }
+
+        $data['specificationImage'] = $request->input('specificationImage');
+        if ($request->hasFile('specification_image_file')) {
+            $logoNewName = time().$request->file('specification_image_file')->getClientOriginalName();
+            $request->file('specification_image_file')->move('lara/front-ends/home', $logoNewName);
+            $data['specificationImage'] = 'lara/front-ends/home/'.$logoNewName;
+        }
+
+        $data['healthServicesImage'] = $request->input('healthServicesImage');
+        if ($request->hasFile('health_services_image_file')) {
+            $logoNewName = time().$request->file('health_services_image_file')->getClientOriginalName();
+            $request->file('health_services_image_file')->move('lara/front-ends/home', $logoNewName);
+            $data['healthServicesImage'] = 'lara/front-ends/home/'.$logoNewName;
+        }
+
+        $frontEnd->update(['content' => json_encode($data)]);
+
+        return redirect()->route('front-ends.index')->with('success', trans('Page updated successcully !!'));
+    }
+
+    /**
      * updateContact function
      *
      * @param Request $request
